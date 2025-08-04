@@ -40,7 +40,6 @@
             btnStart.TabIndex = 0;
             btnStart.Text = "Играть";
             btnStart.UseVisualStyleBackColor = true;
-            btnStart.Click += btnStart_Click;
             // 
             // btnRestart
             // 
@@ -50,7 +49,6 @@
             btnRestart.TabIndex = 1;
             btnRestart.Text = "Рестарт";
             btnRestart.UseVisualStyleBackColor = true;
-            btnRestart.Click += btnRestart_Click;
             // 
             // SnakeForm
             // 
