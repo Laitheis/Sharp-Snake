@@ -224,21 +224,21 @@
 //        {
 //            var newHead = Head;
 
-            //switch (direction)
-            //{
-            //    case Direction.Up:
-            //        newHead.Y--;
-            //        break;
-            //    case Direction.Down:
-            //        newHead.Y++;
-            //        break;
-            //    case Direction.Left:
-            //        newHead.X--;
-            //        break;
-            //    case Direction.Right:
-            //        newHead.X++;
-            //        break;
-            //}
+//switch (direction)
+//{
+//    case Direction.Up:
+//        newHead.Y--;
+//        break;
+//    case Direction.Down:
+//        newHead.Y++;
+//        break;
+//    case Direction.Left:
+//        newHead.X--;
+//        break;
+//    case Direction.Right:
+//        newHead.X++;
+//        break;
+//}
 
 //            Body.Insert(0, newHead);
 //            Body.RemoveAt(Body.Count - 1);
@@ -258,20 +258,31 @@ namespace Sharp_Snake
 {
     public partial class SnakeForm : Form
     {
+        private void SnakeForm_Load(object sender, EventArgs e)
+        {
+            this.Text = "Змейка";
+            this.DoubleBuffered = true;
+            this.KeyPreview = true;
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+        }
+
         private Snake _snake;
         private Point _food;
 
         private FormsTimer _gameTimer;
-        private const int _fieldWidth = 3;
-        private const int _fieldHeight = 3;
+        private const int _fieldWidth = 5;
+        private const int _fieldHeight = 15;
         private const int _cellSize = 20;
 
         private bool _isGameStarted;
 
-        private Point _currentPosition;
-        private Point _nextPosition;
+        private Direction _currentDirection;
+        private Direction _nextDirection;
 
-        private Direction _direction;
+        private Random _random;
+
+        private int _speed = 500;
 
         public SnakeForm()
         {
@@ -281,8 +292,9 @@ namespace Sharp_Snake
 
         private void InitializeGame()
         {
-            _snake = new Snake(new Point(0, 0));
+            _snake = new Snake(new Point(_fieldWidth / 2, _fieldHeight / 2));
             _gameTimer = new FormsTimer();
+            _random = new Random();
 
             btnRestart.Enabled = false;
 
@@ -299,9 +311,11 @@ namespace Sharp_Snake
             btnStart.Enabled = false;
             btnRestart.Enabled = false;
 
-            _isGameStarted = true;
+            _gameTimer.Interval = _speed;
 
-            _currentPosition = new Point(_fieldWidth / 2, _fieldHeight / 2);
+            GenerateFood();
+
+            _isGameStarted = true;
 
             _gameTimer.Start();
             this.Focus();
@@ -309,38 +323,89 @@ namespace Sharp_Snake
 
         private void RestartGame()
         {
-
+            StartGame();
         }
 
         private void GameLoop()
         {
             if (_isGameStarted == false) return;
 
-            _snake.Move(_direction);
+            _currentDirection = _nextDirection;
 
-            if (_nextPosition.X < 0 ||
-                _nextPosition.Y < 0 ||
-                _nextPosition.Y > _fieldHeight ||
-                _nextPosition.Y > _fieldWidth ||
+            _snake.Move(_currentDirection);
+
+            if (_snake.Head.X < 0 ||
+                _snake.Head.Y < 0 ||
+                _snake.Head.Y >= _fieldHeight ||
+                _snake.Head.X >= _fieldWidth ||
                 _snake.Body.Skip(1).Any(segment => segment == _snake.Head))
             {
                 GameOver();
                 return;
             }
 
-            _currentPosition = _nextPosition;
-
-            if(_currentPosition == _food)
+            if (_snake.Head == _food)
             {
                 _snake.Grow();
+
+                if(_snake.Body.Count == _fieldHeight * _fieldWidth)
+                {
+                    Win();
+                }
+
+                GenerateFood();
             }
 
             Invalidate();
         }
 
+        private void Win()
+        {
+            _gameTimer.Stop();
+
+            MessageBox.Show("Победа!");
+        }
+
         private void GameOver()
         {
-            throw new NotImplementedException();
+            _isGameStarted = false;
+
+            _gameTimer.Stop();
+
+            btnRestart.Enabled = true;
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (_isGameStarted == false) return;
+
+            switch (e.KeyCode)
+            {
+                case Keys.Up when _currentDirection != Direction.Down:
+                    _nextDirection = Direction.Up;
+                    break;
+                case Keys.Down when _currentDirection != Direction.Up:
+                    _nextDirection = Direction.Down;
+                    break;
+                case Keys.Left when _currentDirection != Direction.Right:
+                    _nextDirection = Direction.Left;
+                    break;
+                case Keys.Right when _currentDirection != Direction.Left:
+                    _nextDirection = Direction.Right;
+                    break;
+            }
+        }
+        private void GenerateFood()
+        {
+            do
+            {
+                _food = new Point(
+                _random.Next(0, _fieldWidth),
+                _random.Next(0, _fieldHeight));
+            }
+            while (_snake.Body.Contains(_food));
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -406,12 +471,12 @@ namespace Sharp_Snake
                 Body.Add(startPosition);
             }
 
-            internal void Grow()
+            public void Grow()
             {
                 Body.Add(Body.Last());
             }
 
-            internal void Move(Direction direction)
+            public void Move(Direction direction)
             {
                 Point newHead = Head;
 
@@ -427,7 +492,5 @@ namespace Sharp_Snake
                 Body.RemoveAt(_body.Count - 1);
             }
         }
-
-
     }
 }
