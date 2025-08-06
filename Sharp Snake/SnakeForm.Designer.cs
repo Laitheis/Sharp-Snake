@@ -59,7 +59,7 @@
             Controls.Add(btnStart);
             Name = "SnakeForm";
             Text = "Form1";
-            Load += SnakeForm_Load;
+            //Load += SnakeForm_Load;
             ResumeLayout(false);
         }
 
