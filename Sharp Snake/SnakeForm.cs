@@ -462,7 +462,7 @@ namespace Sharp_Snake
 
         public SnakeForm()
         {
-            Text = "Snake Game - Windows Forms";
+            Text = "Snake Game";
             DoubleBuffered = true;
             _controller = new GameController(this);
             KeyDown += _controller.OnKeyDown;
